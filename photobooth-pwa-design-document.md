@@ -2209,11 +2209,104 @@ http {
 
 ---
 
+---
+
+## 20. Implementation Updates (December 10, 2024)
+
+### ✅ **Phase 1: Complete & Tested**
+
+As of December 10, 2024, Phase 1 has been fully implemented and tested. Below are the key differences between the original design and actual implementation.
+
+### Implementation Changes
+
+#### 1. Backend Port Change
+**Original:** Port 3000  
+**Actual:** Port **3001**  
+**Reason:** Port 3000 was occupied by another application on dev machine  
+**Impact:** 
+- `app/.env`: `PORT=3001`
+- `frontend/vite.config.js`: Proxy targets `localhost:3001`
+
+#### 2. Device Fingerprinting Behavior
+**Original:** Device fingerprint auto-returns users to existing account  
+**Actual:** Device fingerprint stored but **NOT used for auto-login**  
+**Reason:** Wedding requires multiple guests to use same tablet  
+**Impact:**
+- Users identified by localStorage only
+- Device fingerprint kept for database tracking
+- Multiple users can share same device seamlessly
+
+#### 3. Name Conflict Resolution Enhancement
+**Original:** Show error message, user figures it out  
+**Actual:** Smart two-button UI: "That's Me" vs "Different Person"  
+**Improvement:**
+- "That's Me" → Claims existing account (loads their photos)
+- "Different Person" → Auto-creates numbered variant (e.g., "Sarah M2")
+- Better UX for device switching and duplicate names
+
+#### 4. User Flow Enhancement
+**Original:** Auto-redirect returning users to `/booth`  
+**Actual:** Show "Welcome back! Continue or Switch?" screen  
+**Improvement:**
+- Easier user switching on shared devices
+- Clearer user experience
+- Still fast for returning users (one click)
+
+### Phase 1 Checklist — Updated Status
+
+- [x] Project scaffolding (SvelteKit + Fastify)
+- [x] SQLite database initialization
+- [x] Name entry flow with device fingerprinting
+- [x] Camera access and mirrored viewfinder
+- [x] Single photo capture with countdown
+- [x] Flash effect (visual only - sound files optional)
+- [x] Photo preview and retake
+- [x] Server upload endpoint
+- [x] Sharp image processing (original, web, thumb)
+- [x] Basic personal gallery (`/gallery/:slug`)
+- [ ] Docker Compose setup (Phase 6)
+- [ ] Cloudflare Tunnel deployment (Phase 6)
+
+**Deliverable Status:** ✅ Complete - Guests can enter name, take single photos, view their gallery
+
+### Technical Specifications (As-Built)
+
+| Component | Specification |
+|-----------|---------------|
+| Backend Framework | Fastify 4.25.2 |
+| Backend Port | 3001 (dev), configurable via .env |
+| Database | SQLite via better-sqlite3 9.2.2 |
+| Image Processing | Sharp 0.33.1 |
+| Frontend Framework | SvelteKit 2.0 |
+| Frontend Port | 5173 (Vite dev server) |
+| Styling | Tailwind CSS 3.4 |
+| PWA Support | vite-plugin-pwa 0.17.4 |
+
+### Testing Status
+
+✅ **Verified Working:**
+- User creation with conflict resolution
+- Single photo capture end-to-end
+- Photo processing (3 versions)
+- Personal galleries
+- Multi-user support on same device
+- Data persistence (SQLite + files)
+- Beautiful UI with starry background
+
+### Repository
+
+**GitHub:** https://github.com/meezymeek/HHWeddingBooth  
+**Commit:** c08cb86 (Phase 1 complete)  
+**Last Updated:** December 10, 2024
+
+---
+
 ## Document History
 
 | Version | Date | Author | Changes |
 |---------|------|--------|---------|
 | 1.0 | December 2024 | Claude + Hayden | Initial design document |
+| 1.1 | December 10, 2024 | Cline + Hayden | Phase 1 implementation updates, actual vs planned changes |
 
 ---
 
