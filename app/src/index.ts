@@ -14,6 +14,7 @@ config();
 import { userRoutes } from './routes/users.js';
 import { photoRoutes } from './routes/photos.js';
 import { sessionRoutes } from './routes/sessions.js';
+import { adminRoutes } from './routes/admin.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -67,7 +68,7 @@ fastify.get('/health', async (request, reply) => {
   return { status: 'ok', timestamp: new Date().toISOString() };
 });
 
-// API routes
+// API routes (public - no auth required)
 fastify.register(async (instance) => {
   // User routes
   await userRoutes(instance);
@@ -78,6 +79,11 @@ fastify.register(async (instance) => {
   // Session routes
   await sessionRoutes(instance);
 }, { prefix: '/api' });
+
+// Admin routes (separate plugin with auth)
+fastify.register(async (instance) => {
+  await adminRoutes(instance);
+}, { prefix: '/api/admin' });
 
 // Error handler
 fastify.setErrorHandler((error, request, reply) => {

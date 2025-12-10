@@ -1,18 +1,28 @@
 <script lang="ts">
 	import { page } from '$app/stores';
 	import { onMount } from 'svelte';
-	import { getUserPhotos } from '$lib/services/api';
+	import { getUserPhotos, sendEmail, getUserInfo } from '$lib/services/api';
 	import type { Photo, Session } from '$lib/stores/photos';
 
-	let slug = $page.params.slug;
+	let slug = $page.params.slug || '';
 	let photos: Photo[] = [];
 	let sessions: Session[] = [];
 	let loading = true;
 	let error = '';
 	let selectedPhoto: string | null = null;
+	let userEmail: string | null = null;
+	let sendingEmail = false;
+	let emailSuccess = false;
+	let emailError = '';
 
 	onMount(async () => {
+		if (!slug) {
+			error = 'Invalid gallery URL';
+			loading = false;
+			return;
+		}
 		await loadPhotos();
+		await loadUserInfo();
 	});
 
 	async function loadPhotos() {
@@ -28,6 +38,46 @@
 			error = err instanceof Error ? err.message : 'Failed to load photos';
 		} finally {
 			loading = false;
+		}
+	}
+
+	async function loadUserInfo() {
+		try {
+			const userInfo = await getUserInfo(slug);
+			// Check if user stored has email
+			const storedUser = localStorage.getItem('photobooth_user');
+			if (storedUser) {
+				const parsed = JSON.parse(storedUser);
+				if (parsed.slug === slug && parsed.email) {
+					userEmail = parsed.email;
+				}
+			}
+		} catch (err) {
+			console.error('Error loading user info:', err);
+		}
+	}
+
+	async function handleSendEmail() {
+		if (!userEmail) {
+			emailError = 'No email address on file. Please contact the hosts.';
+			return;
+		}
+
+		sendingEmail = true;
+		emailSuccess = false;
+		emailError = '';
+
+		try {
+			await sendEmail(slug);
+			emailSuccess = true;
+			setTimeout(() => {
+				emailSuccess = false;
+			}, 5000);
+		} catch (err) {
+			console.error('Email send error:', err);
+			emailError = err instanceof Error ? err.message : 'Failed to send email';
+		} finally {
+			sendingEmail = false;
 		}
 	}
 
@@ -133,8 +183,33 @@
 				</div>
 			{/if}
 
-			<div class="text-center mt-12">
-				<a href="/booth" class="btn btn-primary btn-large">
+			<div class="text-center mt-12 space-y-4">
+				{#if userEmail}
+					<div class="mb-6">
+						{#if emailSuccess}
+							<div class="success-banner max-w-md mx-auto mb-4">
+								✅ Photos sent to {userEmail}!
+							</div>
+						{/if}
+						{#if emailError}
+							<div class="error-banner max-w-md mx-auto mb-4">
+								{emailError}
+							</div>
+						{/if}
+						<button
+							on:click={handleSendEmail}
+							disabled={sendingEmail}
+							class="btn btn-large"
+						>
+							{sendingEmail ? '📧 Sending...' : '📧 Email My Photos'}
+						</button>
+						<p class="text-sm opacity-60 mt-2">
+							Send to: {userEmail}
+						</p>
+					</div>
+				{/if}
+
+				<a href="/booth" class="btn btn-primary btn-large inline-block">
 					← Back to Booth
 				</a>
 			</div>
@@ -244,5 +319,35 @@
 		margin-top: 20px;
 		opacity: 0.6;
 		font-size: 0.9rem;
+	}
+
+	.success-banner {
+		background: rgba(16, 185, 129, 0.2);
+		border: 2px solid rgba(16, 185, 129, 0.5);
+		color: rgb(167, 243, 208);
+		padding: 12px;
+		border-radius: 8px;
+		text-align: center;
+		animation: slideDown 0.3s ease-out;
+	}
+
+	.error-banner {
+		background: rgba(239, 68, 68, 0.2);
+		border: 2px solid rgba(239, 68, 68, 0.5);
+		color: rgb(254, 202, 202);
+		padding: 12px;
+		border-radius: 8px;
+		text-align: center;
+	}
+
+	@keyframes slideDown {
+		from {
+			opacity: 0;
+			transform: translateY(-20px);
+		}
+		to {
+			opacity: 1;
+			transform: translateY(0);
+		}
 	}
 </style>

@@ -1,8 +1,11 @@
 import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
 import { v4 as uuidv4 } from 'uuid';
-import { userQueries } from '../services/database.js';
+import { userQueries, photoQueries, sessionQueries } from '../services/database.js';
 import { generateSlug, sanitizeName } from '../utils/slug.js';
 import { ensureUserDirectories } from '../services/storage.js';
+import { sendPhotosEmail } from '../services/email.js';
+import path from 'path';
+import { resolve } from 'path';
 
 interface CreateUserBody {
   name: string;
@@ -135,6 +138,92 @@ export async function userRoutes(fastify: FastifyInstance) {
         photo_count: user.photo_count,
         session_count: user.session_count,
       });
+    }
+  );
+
+  /**
+   * POST /api/users/:slug/send-email
+   * Send user's photos via email
+   */
+  fastify.post<{ Params: { slug: string } }>(
+    '/users/:slug/send-email',
+    async (request: FastifyRequest<{ Params: { slug: string } }>, reply: FastifyReply) => {
+      const { slug } = request.params;
+
+      // Get user
+      const user = userQueries.findBySlug.get(slug) as User | undefined;
+      if (!user) {
+        return reply.code(404).send({
+          error: 'not_found',
+          message: 'User not found',
+        });
+      }
+
+      // Check if user has email
+      if (!user.email) {
+        return reply.code(400).send({
+          error: 'no_email',
+          message: 'User has no email address on file',
+        });
+      }
+
+      // Get all user's photos
+      const photos = photoQueries.findByUserId.all(user.id, 100, 0) as Array<{
+        id: string;
+        filename_web: string;
+        filename_original: string;
+        session_id: string | null;
+      }>;
+
+      if (photos.length === 0) {
+        return reply.code(400).send({
+          error: 'no_photos',
+          message: 'User has no photos to send',
+        });
+      }
+
+      // Get photos base path
+      const photosBasePath = process.env.PHOTOS_PATH || resolve('./data/photos');
+
+      // Build absolute paths to web versions
+      const photoPaths = photos
+        .filter(p => !p.session_id) // Individual photos only
+        .map(p => path.join(photosBasePath, slug, 'web', `${p.id}.jpg`));
+
+      // Get user's sessions with strips
+      const sessions = sessionQueries.findByUserId.all(user.id) as Array<{
+        id: string;
+        strip_filename: string | null;
+      }>;
+
+      // Get strip path if exists
+      let stripPath: string | undefined;
+      if (sessions.length > 0 && sessions[0].strip_filename) {
+        stripPath = path.join(photosBasePath, slug, 'strips', `${sessions[0].id}.jpg`);
+      }
+
+      try {
+        // Send email
+        await sendPhotosEmail({
+          to: user.email,
+          name: user.name,
+          slug: user.slug,
+          photoPaths,
+          stripPath,
+        });
+
+        return reply.send({
+          sent: true,
+          email: user.email,
+          photo_count: photoPaths.length,
+        });
+      } catch (error) {
+        console.error('Failed to send email:', error);
+        return reply.code(500).send({
+          error: 'email_failed',
+          message: error instanceof Error ? error.message : 'Failed to send email',
+        });
+      }
     }
   );
 }

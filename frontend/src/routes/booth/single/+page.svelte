@@ -2,7 +2,8 @@
 	import { goto } from '$app/navigation';
 	import { userStore } from '$lib/stores/user';
 	import { configStore } from '$lib/stores/config';
-	import { uploadPhoto } from '$lib/services/api';
+	import { uploadPhotoWithOfflineSupport } from '$lib/services/api';
+	import { isOnline } from '$lib/stores/offline';
 	import Camera from '$lib/components/Camera.svelte';
 	import { onMount } from 'svelte';
 
@@ -45,11 +46,16 @@
 		error = '';
 
 		try {
-			await uploadPhoto({
+			const result = await uploadPhotoWithOfflineSupport({
 				user_id: user.id,
 				blob: capturedBlob,
 				captured_at: new Date().toISOString()
 			});
+
+			// If offline, result will be null but photo is queued
+			if (!result && !$isOnline) {
+				console.log('Photo queued for offline sync');
+			}
 
 			// Success! Redirect back to booth menu
 			goto('/booth');

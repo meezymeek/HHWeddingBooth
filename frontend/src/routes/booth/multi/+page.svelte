@@ -1,7 +1,8 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
 	import { onMount } from 'svelte';
-	import { createSession, uploadPhoto, generateStrip } from '$lib/services/api';
+	import { createSession, uploadPhotoWithOfflineSupport, generateStrip } from '$lib/services/api';
+	import { isOnline } from '$lib/stores/offline';
 	import Camera from '$lib/components/Camera.svelte';
 
 	// User state
@@ -99,19 +100,30 @@
 
 		try {
 			// Upload all photos with session_id and sequence_number
+			let allUploaded = true;
 			for (let i = 0; i < capturedPhotos.length; i++) {
-				await uploadPhoto({
+				const result = await uploadPhotoWithOfflineSupport({
 					user_id: user.id,
 					session_id: sessionId,
 					blob: capturedPhotos[i].blob,
 					captured_at: new Date().toISOString(),
 					sequence_number: i + 1
 				});
+				
+				// If offline, photos are queued but result is null
+				if (!result && !$isOnline) {
+					allUploaded = false;
+				}
 			}
 
-			// Generate photo strip
-			const stripResult = await generateStrip(sessionId);
-			stripUrl = `/photos/${user.slug}/strips/${stripResult.strip_filename}`;
+			// Only generate strip if all photos were uploaded successfully (online)
+			if (allUploaded && $isOnline) {
+				const stripResult = await generateStrip(sessionId);
+				stripUrl = `/photos/${user.slug}/strips/${stripResult.strip_filename}`;
+			} else if (!$isOnline) {
+				// Offline - photos queued, skip strip generation for now
+				console.log('Photos queued for offline sync. Strip will be generated when synced.');
+			}
 		} catch (err) {
 			console.error('Upload/strip generation error:', err);
 			error = err instanceof Error ? err.message : 'Failed to process photos';

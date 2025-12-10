@@ -1,7 +1,54 @@
 import type { User } from '$lib/stores/user';
 import type { Photo, Session } from '$lib/stores/photos';
+import { queuePhoto } from './offlineQueue';
+import { get } from 'svelte/store';
+import { isOnline } from '$lib/stores/offline';
 
 const API_BASE = '/api';
+
+// UUID generation for browser
+function generateUUID(): string {
+	return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
+		const r = (Math.random() * 16) | 0;
+		const v = c === 'x' ? r : (r & 0x3) | 0x8;
+		return v.toString(16);
+	});
+}
+
+/**
+ * Upload a photo with offline support
+ * If offline, queues the photo for later sync
+ * If online, uploads immediately
+ */
+export async function uploadPhotoWithOfflineSupport(data: {
+	user_id: string;
+	session_id?: string;
+	blob: Blob;
+	captured_at: string;
+	sequence_number?: number;
+}): Promise<{
+	photo: {
+		id: string;
+		filename_web: string;
+		filename_thumb: string;
+	};
+} | null> {
+	// If offline, queue for later
+	if (!get(isOnline)) {
+		await queuePhoto({
+			id: generateUUID(),
+			userId: data.user_id,
+			sessionId: data.session_id || null,
+			blob: data.blob,
+			capturedAt: data.captured_at,
+			sequenceNumber: data.sequence_number || null
+		});
+		return null; // Photo queued, no immediate response
+	}
+
+	// If online, upload immediately
+	return uploadPhoto(data);
+}
 
 /**
  * Create or lookup a user
@@ -30,6 +77,141 @@ export async function createUser(data: {
 	}
 
 	return response.json();
+}
+
+/**
+ * Send user's photos via email
+ */
+export async function sendEmail(slug: string): Promise<{
+	sent: boolean;
+	email: string;
+	photo_count: number;
+}> {
+	const response = await fetch(`${API_BASE}/users/${slug}/send-email`, {
+		method: 'POST'
+	});
+
+	if (!response.ok) {
+		const error = await response.json();
+		throw new Error(error.message || 'Failed to send email');
+	}
+
+	return response.json();
+}
+
+/**
+ * Admin API Functions
+ */
+
+/**
+ * Verify admin password
+ */
+export async function verifyAdminPassword(password: string): Promise<{
+	valid: boolean;
+	token?: string;
+}> {
+	const response = await fetch(`${API_BASE}/admin/verify`, {
+		method: 'POST',
+		headers: { 'Content-Type': 'application/json' },
+		body: JSON.stringify({ password })
+	});
+
+	return response.json();
+}
+
+/**
+ * Get all users (admin only)
+ */
+export async function getAdminUsers(token: string): Promise<{
+	users: Array<{
+		id: string;
+		name: string;
+		slug: string;
+		email: string | null;
+		photo_count: number;
+		session_count: number;
+		last_active: string;
+	}>;
+}> {
+	const response = await fetch(`${API_BASE}/admin/users`, {
+		headers: { Authorization: `Bearer ${token}` }
+	});
+
+	if (!response.ok) {
+		throw new Error('Failed to fetch users');
+	}
+
+	return response.json();
+}
+
+/**
+ * Get all photos (admin only)
+ */
+export async function getAdminPhotos(
+	token: string,
+	page: number = 1,
+	perPage: number = 50
+): Promise<{
+	photos: Array<any>;
+	pagination: any;
+}> {
+	const response = await fetch(`${API_BASE}/admin/photos?page=${page}&per_page=${perPage}`, {
+		headers: { Authorization: `Bearer ${token}` }
+	});
+
+	if (!response.ok) {
+		throw new Error('Failed to fetch photos');
+	}
+
+	return response.json();
+}
+
+/**
+ * Get admin stats
+ */
+export async function getAdminStats(token: string): Promise<{
+	total_users: number;
+	total_photos: number;
+	total_sessions: number;
+	users_with_email: number;
+}> {
+	const response = await fetch(`${API_BASE}/admin/stats`, {
+		headers: { Authorization: `Bearer ${token}` }
+	});
+
+	if (!response.ok) {
+		throw new Error('Failed to fetch stats');
+	}
+
+	return response.json();
+}
+
+/**
+ * Trigger bulk email send (admin only)
+ */
+export async function sendBulkEmails(token: string): Promise<{
+	sent: number;
+	failed: number;
+	total: number;
+	errors: string[];
+}> {
+	const response = await fetch(`${API_BASE}/admin/send-bulk-emails`, {
+		method: 'POST',
+		headers: { Authorization: `Bearer ${token}` }
+	});
+
+	if (!response.ok) {
+		throw new Error('Failed to send bulk emails');
+	}
+
+	return response.json();
+}
+
+/**
+ * Download all photos as ZIP (admin only)
+ */
+export function getDownloadUrl(token: string, quality: 'web' | 'original' = 'web'): string {
+	return `${API_BASE}/admin/download?quality=${quality}&token=${token}`;
 }
 
 /**
