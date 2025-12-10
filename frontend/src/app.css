@@ -1,0 +1,143 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+	:root {
+		/* Background gradient */
+		--bg-gradient: linear-gradient(to top, #000814 0%, #001233 15%, #000000 100%);
+		
+		/* Primary colors */
+		--color-white: #ffffff;
+		--color-white-90: #f0f0f0;
+		--color-white-80: #e0e0e0;
+		--color-white-70: #d0d0d0;
+		--color-gray: #808080;
+		
+		/* Surfaces */
+		--surface-card: rgba(20, 20, 20, 0.15);
+		--surface-card-hover: rgba(255, 255, 255, 0.25);
+		--border-subtle: rgba(255, 255, 255, 0.2);
+		--border-medium: rgba(255, 255, 255, 0.5);
+		
+		/* Shadows */
+		--shadow-card: 0 8px 32px rgba(0, 0, 0, 0.5);
+		--shadow-button-hover: 0 4px 12px rgba(255, 255, 255, 0.2);
+		
+		/* Blur */
+		--blur-card: blur(3px);
+	}
+
+	* {
+		box-sizing: border-box;
+	}
+
+	html, body {
+		margin: 0;
+		padding: 0;
+		width: 100%;
+		min-height: 100vh;
+		overflow-x: hidden;
+	}
+
+	body {
+		background: var(--bg-gradient);
+		background-attachment: fixed;
+		color: var(--color-white);
+		font-family: 'Playfair Display', serif;
+		line-height: 1.6;
+	}
+}
+
+@layer components {
+	.card {
+		@apply rounded-2xl p-10 backdrop-blur-sm;
+		background: var(--surface-card);
+		border: 2px solid var(--border-subtle);
+		box-shadow: var(--shadow-card);
+		animation: slideUp 1s ease-out both;
+	}
+
+	.btn {
+		@apply inline-block px-6 py-3 rounded-lg cursor-pointer transition-all duration-300;
+		@apply font-body text-lg tracking-wider uppercase;
+		background: var(--surface-card);
+		border: 2px solid var(--border-medium);
+		color: var(--color-white);
+	}
+
+	.btn:hover {
+		background: var(--surface-card-hover);
+		border-color: var(--color-white);
+		transform: translateY(-2px);
+		box-shadow: var(--shadow-button-hover);
+	}
+
+	.btn-primary {
+		background: rgba(255, 255, 255, 0.2);
+	}
+
+	.btn-large {
+		@apply px-10 py-5 text-xl;
+	}
+
+	.btn-capture {
+		@apply w-20 h-20 rounded-full p-0 border-4;
+	}
+
+	.text-display {
+		@apply font-display text-6xl;
+	}
+
+	.text-script {
+		@apply font-script text-3xl;
+	}
+
+	.text-heading {
+		@apply font-body text-2xl font-bold uppercase tracking-wider;
+	}
+
+	.text-label {
+		@apply font-body text-lg font-bold uppercase tracking-wide;
+	}
+
+	.ornament::before {
+		@apply inline-block mx-2;
+		content: '◆';
+		color: var(--color-gray);
+	}
+
+	.link {
+		@apply no-underline transition-all duration-300;
+		color: var(--color-white);
+		border-bottom: 1px dotted var(--color-white);
+	}
+
+	.link:hover {
+		color: #c0c0c0;
+		border-bottom-color: #c0c0c0;
+	}
+}
+
+@layer utilities {
+	.sparkle {
+		@apply inline-block animate-sparkle;
+	}
+}
+
+/* Keyframe animations */
+@keyframes slideUp {
+	from {
+		opacity: 0;
+		transform: translateY(30px);
+	}
+	to {
+		opacity: 1;
+		transform: translateY(0);
+	}
+}
+
+@keyframes fadeIn {
+	from { opacity: 0; }
+	to { opacity: 1; }
+}
