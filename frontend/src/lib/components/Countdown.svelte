@@ -4,6 +4,7 @@
 
 	export let seconds = 3;
 	export let soundEnabled = true;
+	export let showOverlay = true;
 
 	const dispatch = createEventDispatcher();
 
@@ -49,9 +50,15 @@
 </script>
 
 {#if active && current > 0}
-	<div class="countdown-overlay">
-		<span class="countdown-number">{current}</span>
-	</div>
+	{#if showOverlay}
+		<div class="countdown-overlay">
+			<span class="countdown-number">{current}</span>
+		</div>
+	{:else}
+		<div class="countdown-number-only">
+			{current}
+		</div>
+	{/if}
 {/if}
 
 <style>
@@ -90,5 +97,19 @@
 			transform: scale(1);
 			opacity: 1;
 		}
+	}
+
+	.countdown-number-only {
+		position: fixed;
+		top: 50%;
+		left: 50%;
+		transform: translate(-50%, -50%);
+		font-family: 'Great Vibes', cursive;
+		font-size: 12rem;
+		color: white;
+		text-shadow: 0 0 40px rgba(0, 0, 0, 0.8), 0 0 20px rgba(0, 0, 0, 0.9);
+		z-index: 100;
+		animation: pulse 1s ease-in-out;
+		pointer-events: none;
 	}
 </style>

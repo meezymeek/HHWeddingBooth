@@ -7,6 +7,7 @@
 
 	export let mirror = true;
 	export let countdownSeconds = 3;
+	export let showCountdownOverlay = true;
 
 	const dispatch = createEventDispatcher();
 
@@ -100,6 +101,7 @@
 			bind:this={countdown}
 			seconds={countdownSeconds}
 			{soundEnabled}
+			showOverlay={showCountdownOverlay}
 			on:complete={handleCountdownComplete}
 		/>
 

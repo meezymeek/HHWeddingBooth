@@ -2,11 +2,11 @@
 
 A Progressive Web App (PWA) photo booth for Haven & Hayden's New Year's Eve 2025 wedding.
 
-## ✅ Project Status: Phase 1 COMPLETE & TESTED (100%)
+## ✅ Project Status: Phase 2 COMPLETE & TESTED (100%)
 
 **Latest Update:** December 10, 2024  
-**Current Version:** 1.0.0 (Phase 1 MVP)  
-**Commit:** c08cb86  
+**Current Version:** 2.0.0 (Phase 2 - Multi-Shot Booth)  
+**Commit:** (pending)  
 
 ### ✅ **Phase 1: COMPLETE** — Fully Working & Tested
 
@@ -33,24 +33,46 @@ A Progressive Web App (PWA) photo booth for Haven & Hayden's New Year's Eve 2025
 - ✅ Wedding-themed UI (glassmorphism, custom fonts)
 - ✅ Multi-user support on same device
 
+### ✅ **Phase 2: COMPLETE** — Multi-Shot Photo Booth Mode
+
+#### New Features Delivered
+- ✅ Multi-shot photo booth configuration UI
+- ✅ Configurable photo count (2-10 photos, default 4)
+- ✅ Configurable timing (countdown & delays)
+- ✅ Sequential automatic capture with progress tracking
+- ✅ Real-time thumbnail strip during capture
+- ✅ Photo strip generation (vertical layout with borders)
+- ✅ Enhanced preview with strip + individual photos
+- ✅ Retake all functionality
+- ✅ Gallery integration for photo booth sessions
+
+#### Key UX Decisions
+- **Number-only countdown**: Clean viewfinder without blur overlay
+- **Automatic progression**: No user interaction needed after start
+- **Live feedback**: Progress dots and thumbnail strip during capture
+- **Beautiful strips**: Professional vertical photo booth layout
+
 ### 📋 **What's Working Now**
 
 ✅ Guests can create accounts (first name + last initial)  
 ✅ Smart handling when names conflict ("That's Me" vs "Different Person")  
-✅ Single photo capture with 3-second countdown  
-✅ Photo processing (original, web, thumbnail)  
-✅ Personal galleries accessible via `/gallery/{slug}`  
+✅ **Single photo mode**: Quick capture with countdown  
+✅ **Multi-shot booth mode**: Sequential captures with photo strips  
+✅ Photo processing (original, web, thumbnail) + strip generation  
+✅ Personal galleries with sessions and individual photos  
 ✅ Multiple users can use same device/tablet  
 ✅ Data persists in SQLite + file storage  
 ✅ Beautiful wedding-themed UI with animations  
+✅ Fullscreen photo viewer for all images  
 
-### 🚀 **Next: Phase 2 - Photo Booth Mode**
+### 🚀 **Next: Phase 3 - Polish & Production**
 
 Ready to implement:
-- Multi-shot sequences (2-10 photos)
-- Photo strip generation
-- Configurable timing
-- Session management UI
+- PWA offline support
+- Email delivery
+- Admin dashboard
+- Stress testing
+- Production deployment
 
 ## 🚀 Quick Start
 
@@ -230,10 +252,14 @@ For complete design specifications, see `docs/photobooth-pwa-design-document.md`
 - [x] Multi-user support
 - [x] Tested and working
 
-### Phase 2: Photo Booth Mode
-- [ ] Multi-shot sequences
-- [ ] Photo strip generation
-- [ ] Session management UI
+### Phase 2: Photo Booth Mode ✅ **COMPLETE**
+- [x] Multi-shot configuration UI
+- [x] Sequential capture with auto-progression
+- [x] Photo strip generation
+- [x] Session management
+- [x] Gallery integration
+- [x] Number-only countdown (clean viewfinder)
+- [x] Tested and working
 
 ### Phase 3: Polish & Reliability
 - [ ] PWA offline support
