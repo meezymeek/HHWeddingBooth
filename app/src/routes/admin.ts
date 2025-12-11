@@ -10,6 +10,11 @@ import { resolve } from 'path';
  * Admin authentication middleware
  */
 async function adminAuth(request: FastifyRequest, reply: FastifyReply) {
+	// Skip auth for the verify endpoint (login)
+	if (request.url.includes('/verify')) {
+		return;
+	}
+
 	const adminPassword = process.env.ADMIN_PASSWORD;
 
 	if (!adminPassword) {
