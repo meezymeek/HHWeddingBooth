@@ -100,7 +100,7 @@
 		error = '';
 
 		try {
-			// Upload all photos with session_id and sequence_number
+			// Upload all photos with session_id, sequence_number, and facing_mode
 			let allUploaded = true;
 			for (let i = 0; i < capturedPhotos.length; i++) {
 				const result = await uploadPhotoWithOfflineSupport({
@@ -108,7 +108,8 @@
 					session_id: sessionId,
 					blob: capturedPhotos[i].blob,
 					captured_at: new Date().toISOString(),
-					sequence_number: i + 1
+					sequence_number: i + 1,
+					facing_mode: capturedPhotos[i].facingMode
 				});
 				
 				// If offline, photos are queued but result is null
@@ -343,8 +344,7 @@
 							<img 
 								src={photo.url} 
 								alt="Individual photo" 
-								class="grid-photo" 
-								class:mirrored={photo.facingMode === 'user'}
+								class="grid-photo"
 							/>
 						{/each}
 					</div>
@@ -555,16 +555,17 @@
 
 	.strip-container {
 		background: white;
-		padding: 20px;
+		padding: 8px;
 		border-radius: 12px;
 		box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
 	}
 
 	.strip-image {
-		max-height: 600px;
+		max-height: 90vh;
 		max-width: 100%;
 		display: block;
 		border-radius: 8px;
+		object-fit: contain;
 	}
 
 	.photo-grid {
@@ -586,14 +587,6 @@
 
 	.grid-photo:hover {
 		transform: scale(1.05);
-	}
-
-	.grid-photo.mirrored {
-		transform: scaleX(-1);
-	}
-
-	.grid-photo.mirrored:hover {
-		transform: scaleX(-1) scale(1.05);
 	}
 
 	.loading-spinner {

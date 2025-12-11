@@ -26,6 +26,7 @@ export async function uploadPhotoWithOfflineSupport(data: {
 	blob: Blob;
 	captured_at: string;
 	sequence_number?: number;
+	facing_mode?: 'user' | 'environment';
 }): Promise<{
 	photo: {
 		id: string;
@@ -243,6 +244,7 @@ export async function uploadPhoto(data: {
 	blob: Blob;
 	captured_at: string;
 	sequence_number?: number;
+	facing_mode?: 'user' | 'environment';
 }): Promise<{
 	photo: {
 		id: string;
@@ -260,6 +262,10 @@ export async function uploadPhoto(data: {
 	
 	if (data.sequence_number !== undefined) {
 		formData.append('sequence_number', String(data.sequence_number));
+	}
+	
+	if (data.facing_mode) {
+		formData.append('facing_mode', data.facing_mode);
 	}
 	
 	formData.append('file', data.blob, 'photo.jpg');

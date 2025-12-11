@@ -14,11 +14,12 @@
 	let uploading = false;
 	let error = '';
 	let capturedWithFrontCamera = true; // Track which camera was used
+	let capturedFacingMode: 'user' | 'environment' = 'user'; // Track facing mode for upload
 
 	$: countdownSeconds = $configStore.countdown_initial;
 	$: mirror = $configStore.mirror_preview;
-	// Only mirror preview if photo was taken with front camera
-	$: previewMirrored = capturedWithFrontCamera && mirror;
+	// Photos are already saved with correct orientation, no need to mirror in preview
+	$: previewMirrored = false;
 
 	onMount(() => {
 		const storedUser = localStorage.getItem('photobooth_user');
@@ -31,6 +32,7 @@
 
 	function handleCapture(event: CustomEvent<{ blob: Blob; facingMode: 'user' | 'environment' }>) {
 		capturedBlob = event.detail.blob;
+		capturedFacingMode = event.detail.facingMode;
 		capturedWithFrontCamera = event.detail.facingMode === 'user';
 		previewUrl = URL.createObjectURL(capturedBlob);
 	}
@@ -53,7 +55,8 @@
 			const result = await uploadPhotoWithOfflineSupport({
 				user_id: user.id,
 				blob: capturedBlob,
-				captured_at: new Date().toISOString()
+				captured_at: new Date().toISOString(),
+				facing_mode: capturedFacingMode
 			});
 
 			// If offline, result will be null but photo is queued

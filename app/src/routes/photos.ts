@@ -50,6 +50,7 @@ export async function photoRoutes(fastify: FastifyInstance) {
       const sessionId = data.fields.session_id?.value as string | undefined;
       const capturedAt = data.fields.captured_at?.value as string;
       const sequenceNumber = data.fields.sequence_number?.value as string | undefined;
+      const facingMode = data.fields.facing_mode?.value as string | undefined;
 
       // Validate required fields
       if (!userId || !capturedAt) {
@@ -91,7 +92,8 @@ export async function photoRoutes(fastify: FastifyInstance) {
           filename,
           filename,
           capturedAt,
-          sequenceNumber ? parseInt(sequenceNumber) : null
+          sequenceNumber ? parseInt(sequenceNumber) : null,
+          facingMode || 'user'
         );
 
         // Generate URLs

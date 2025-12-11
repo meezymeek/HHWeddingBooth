@@ -118,10 +118,11 @@ export async function sessionRoutes(fastify: FastifyInstance) {
         });
       }
 
-      // Get photo paths (web versions)
-      const photoPaths = photos.map(photo => 
-        getPhotoPath(userSlug, 'web', photo.filename_web)
-      );
+      // Get photo paths (web versions) with facing mode
+      const photoPaths = photos.map(photo => ({
+        path: getPhotoPath(userSlug, 'web', photo.filename_web),
+        facingMode: photo.facing_mode || 'user'
+      }));
 
       // Generate strip filename
       const stripFilename = `${id}.jpg`;

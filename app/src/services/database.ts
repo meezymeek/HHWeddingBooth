@@ -63,7 +63,8 @@ export function initializeDatabase(): void {
       captured_at TEXT NOT NULL,
       uploaded_at TEXT,
       is_synced INTEGER DEFAULT 0,
-      sequence_number INTEGER
+      sequence_number INTEGER,
+      facing_mode TEXT DEFAULT 'user'
     )
   `);
 
@@ -81,6 +82,14 @@ export function initializeDatabase(): void {
     CREATE INDEX IF NOT EXISTS idx_photos_session ON photos(session_id);
     CREATE INDEX IF NOT EXISTS idx_users_slug ON users(slug);
   `);
+
+  // Migration: Add facing_mode column if it doesn't exist
+  try {
+    db.exec(`ALTER TABLE photos ADD COLUMN facing_mode TEXT DEFAULT 'user'`);
+    console.log('✅ Added facing_mode column to photos table');
+  } catch (error) {
+    // Column already exists, ignore error
+  }
 
   // Insert default config values if not exists
   const insertConfig = db.prepare(`
@@ -172,9 +181,9 @@ export const photoQueries = {
   create: db.prepare(`
     INSERT INTO photos (
       id, user_id, session_id, filename_original, filename_web, 
-      filename_thumb, captured_at, uploaded_at, is_synced, sequence_number
+      filename_thumb, captured_at, uploaded_at, is_synced, sequence_number, facing_mode
     )
-    VALUES (?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP, 1, ?)
+    VALUES (?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP, 1, ?, ?)
   `),
 
   findById: db.prepare(`

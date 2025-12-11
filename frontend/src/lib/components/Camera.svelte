@@ -96,8 +96,10 @@
 			flashTrigger = true;
 			setTimeout(() => flashTrigger = false, 200);
 
-			// Capture photo with correct mirroring based on camera
-			const blob = await capturePhoto(videoElement, effectiveMirror);
+			// Capture photo WITHOUT mirroring
+			// The preview is mirrored for front camera (good UX), but the saved photo should NOT be mirrored
+			// This ensures photos look correct in final output (not backwards)
+			const blob = await capturePhoto(videoElement, false);
 			
 			// Emit photo blob with facing mode info
 			dispatch('capture', { blob, facingMode });
