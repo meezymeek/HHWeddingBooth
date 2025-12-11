@@ -1,6 +1,7 @@
 import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
 import { userQueries, photoQueries, sessionQueries } from '../services/database.js';
 import { sendBulkEmails } from '../services/email.js';
+import { getPhotoUrl } from '../services/storage.js';
 import archiver from 'archiver';
 import { createReadStream, existsSync } from 'fs';
 import path from 'path';
@@ -105,8 +106,15 @@ export async function adminRoutes(fastify: FastifyInstance) {
 				sequence_number: number | null;
 			}>;
 
+			// Transform photos with proper URLs
+			const photosWithUrls = photos.map(photo => ({
+				...photo,
+				filename_web: getPhotoUrl(photo.user_slug, 'web', photo.filename_web),
+				filename_thumb: getPhotoUrl(photo.user_slug, 'thumb', photo.filename_thumb)
+			}));
+
 			return reply.send({
-				photos,
+				photos: photosWithUrls,
 				pagination: {
 					page,
 					per_page: perPage,
