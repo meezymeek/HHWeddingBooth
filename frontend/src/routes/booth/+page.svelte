@@ -27,7 +27,7 @@
 	<div class="flex min-h-screen items-center justify-center p-6">
 		<div class="card max-w-2xl w-full text-center">
 			<h1 class="text-display mb-2">
-				Haven <span class="ornament"></span> Hayden
+				Haven + Hayden
 			</h1>
 			
 			<p class="text-script mb-6">Photo Booth</p>

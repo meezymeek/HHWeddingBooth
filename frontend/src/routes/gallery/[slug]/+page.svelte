@@ -102,7 +102,7 @@
 	<div class="max-w-6xl mx-auto p-6">
 		<div class="text-center mb-12">
 			<h1 class="text-display mb-2">
-				Haven <span class="ornament"></span> Hayden
+				Haven + Hayden
 			</h1>
 			<p class="text-script mb-4">Photo Gallery</p>
 			<div class="h-px bg-white/20 my-6 mx-auto w-1/2"></div>
