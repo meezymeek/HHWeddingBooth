@@ -8,8 +8,10 @@
 	export let mirror = true;
 	export let countdownSeconds = 3;
 	export let showCountdownOverlay = true;
+	export let initialFacingMode: 'user' | 'environment' | null = null; // Override for initial camera
 
 	const dispatch = createEventDispatcher();
+	const CAMERA_PREFERENCE_KEY = 'photobooth_camera_facing';
 
 	let videoElement: HTMLVideoElement;
 	let countdown: Countdown;
@@ -17,8 +19,12 @@
 	let error = '';
 	let capturing = false;
 	let flashTrigger = false;
+	let facingMode: 'user' | 'environment' = 'user';
+	let switching = false;
 
 	$: soundEnabled = $configStore.sound_enabled;
+	// Auto-adjust mirroring based on facing mode
+	$: effectiveMirror = facingMode === 'user' ? mirror : false;
 
 	onMount(async () => {
 		if (!isCameraSupported()) {
@@ -26,8 +32,18 @@
 			return;
 		}
 
+		// Use initialFacingMode if provided, otherwise load saved preference
+		if (initialFacingMode) {
+			facingMode = initialFacingMode;
+		} else {
+			const savedFacing = localStorage.getItem(CAMERA_PREFERENCE_KEY);
+			if (savedFacing === 'user' || savedFacing === 'environment') {
+				facingMode = savedFacing;
+			}
+		}
+
 		try {
-			stream = await startCamera('user');
+			stream = await startCamera(facingMode);
 			if (videoElement) {
 				videoElement.srcObject = stream;
 			}
@@ -40,6 +56,30 @@
 	onDestroy(() => {
 		stopCamera();
 	});
+
+	async function switchCamera() {
+		if (switching || capturing) return;
+
+		switching = true;
+		try {
+			// Switch facing mode
+			facingMode = facingMode === 'user' ? 'environment' : 'user';
+			
+			// Save preference
+			localStorage.setItem(CAMERA_PREFERENCE_KEY, facingMode);
+
+			// Restart camera with new facing mode
+			stream = await startCamera(facingMode);
+			if (videoElement) {
+				videoElement.srcObject = stream;
+			}
+		} catch (err) {
+			error = err instanceof Error ? err.message : 'Failed to switch camera';
+			console.error('Camera switch error:', err);
+		} finally {
+			switching = false;
+		}
+	}
 
 	export async function capture() {
 		if (capturing) return;
@@ -56,11 +96,11 @@
 			flashTrigger = true;
 			setTimeout(() => flashTrigger = false, 200);
 
-			// Capture photo
-			const blob = await capturePhoto(videoElement, mirror);
+			// Capture photo with correct mirroring based on camera
+			const blob = await capturePhoto(videoElement, effectiveMirror);
 			
-			// Emit photo blob
-			dispatch('capture', { blob });
+			// Emit photo blob with facing mode info
+			dispatch('capture', { blob, facingMode });
 		} catch (err) {
 			console.error('Capture error:', err);
 			error = 'Failed to capture photo';
@@ -83,8 +123,19 @@
 			playsinline
 			muted
 			class="video-preview"
-			class:mirrored={mirror}
+			class:mirrored={effectiveMirror}
 		></video>
+
+		<!-- Camera Switch Button -->
+		<button
+			on:click={switchCamera}
+			disabled={capturing || switching}
+			class="btn-camera-switch"
+			aria-label="Switch camera"
+			title="Switch camera"
+		>
+			🔄
+		</button>
 
 		<div class="camera-controls">
 			<button
@@ -163,6 +214,41 @@
 	}
 
 	.btn-capture:disabled {
+		opacity: 0.5;
+		cursor: not-allowed;
+	}
+
+	.btn-camera-switch {
+		position: absolute;
+		top: 20px;
+		right: 20px;
+		width: 56px;
+		height: 56px;
+		border-radius: 50%;
+		background: rgba(0, 0, 0, 0.5);
+		border: 2px solid rgba(255, 255, 255, 0.3);
+		color: white;
+		font-size: 24px;
+		cursor: pointer;
+		transition: all 0.2s;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		backdrop-filter: blur(10px);
+		z-index: 15;
+	}
+
+	.btn-camera-switch:hover:not(:disabled) {
+		transform: scale(1.1) rotate(180deg);
+		background: rgba(0, 0, 0, 0.7);
+		border-color: rgba(255, 255, 255, 0.5);
+	}
+
+	.btn-camera-switch:active:not(:disabled) {
+		transform: scale(0.95);
+	}
+
+	.btn-camera-switch:disabled {
 		opacity: 0.5;
 		cursor: not-allowed;
 	}

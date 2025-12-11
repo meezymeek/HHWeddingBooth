@@ -14,12 +14,13 @@
 	// Configuration
 	let photoCount = 4;
 	let initialCountdown = 3;
-	let betweenDelay = 1;
+	let betweenDelay = 3;
+	let selectedCamera: 'user' | 'environment' = 'user'; // Default to front camera
 
 	// Capture state
 	let camera: Camera;
 	let currentPhotoIndex = 0;
-	let capturedPhotos: Array<{ blob: Blob; url: string }> = [];
+	let capturedPhotos: Array<{ blob: Blob; url: string; facingMode: 'user' | 'environment' }> = [];
 	let sessionId: string | null = null;
 	let delayCountdown = 0;
 	let isWaitingBetweenShots = false;
@@ -70,21 +71,21 @@
 		}
 	}
 
-	function handleCapture(event: CustomEvent<{ blob: Blob }>) {
-		const { blob } = event.detail;
+	function handleCapture(event: CustomEvent<{ blob: Blob; facingMode: 'user' | 'environment' }>) {
+		const { blob, facingMode } = event.detail;
 		const url = URL.createObjectURL(blob);
 		
-		capturedPhotos = [...capturedPhotos, { blob, url }];
+		capturedPhotos = [...capturedPhotos, { blob, url, facingMode }];
 		currentPhotoIndex++;
 
 		// Check if we need more photos
 		if (currentPhotoIndex < photoCount) {
-			// Wait between-shot delay, then trigger next capture
+			// Small delay to let Svelte update the component with new countdownSeconds
 			setTimeout(() => {
 				if (camera) {
 					camera.capture();
 				}
-			}, betweenDelay * 1000);
+			}, 100);
 		} else {
 			// All photos captured, move to preview
 			screen = 'preview';
@@ -234,6 +235,31 @@
 				<p class="text-sm opacity-60 mt-2">Time between each photo</p>
 			</div>
 
+			<!-- Camera Selection -->
+			<div class="config-section">
+				<label class="text-lg font-medium mb-3 block">Camera</label>
+				<div class="camera-options">
+					<button
+						class="camera-option"
+						class:selected={selectedCamera === 'user'}
+						on:click={() => selectedCamera = 'user'}
+					>
+						<div class="camera-icon">🤳</div>
+						<div class="camera-label">Front Camera</div>
+						<div class="camera-desc">Selfie mode</div>
+					</button>
+					<button
+						class="camera-option"
+						class:selected={selectedCamera === 'environment'}
+						on:click={() => selectedCamera = 'environment'}
+					>
+						<div class="camera-icon">📷</div>
+						<div class="camera-label">Back Camera</div>
+						<div class="camera-desc">Rear-facing</div>
+					</button>
+				</div>
+			</div>
+
 			<div class="flex gap-4 mt-8">
 				<button on:click={cancel} class="btn flex-1">
 					← Cancel
@@ -250,8 +276,9 @@
 		<Camera
 			bind:this={camera}
 			mirror={true}
-			countdownSeconds={currentPhotoIndex === 0 ? initialCountdown : 1}
+			countdownSeconds={currentPhotoIndex === 0 ? initialCountdown : Math.ceil(betweenDelay)}
 			showCountdownOverlay={false}
+			initialFacingMode={selectedCamera}
 			on:capture={handleCapture}
 		/>
 
@@ -313,7 +340,12 @@
 					<h3 class="text-xl mb-4 text-center opacity-80">Individual Photos:</h3>
 					<div class="photo-grid">
 						{#each capturedPhotos as photo}
-							<img src={photo.url} alt="Individual photo" class="grid-photo" />
+							<img 
+								src={photo.url} 
+								alt="Individual photo" 
+								class="grid-photo" 
+								class:mirrored={photo.facingMode === 'user'}
+							/>
 						{/each}
 					</div>
 				</div>
@@ -386,6 +418,49 @@
 		cursor: pointer;
 		border: none;
 		box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+	}
+
+	.camera-options {
+		display: grid;
+		grid-template-columns: 1fr 1fr;
+		gap: 16px;
+	}
+
+	.camera-option {
+		background: rgba(255, 255, 255, 0.05);
+		border: 2px solid rgba(255, 255, 255, 0.2);
+		border-radius: 12px;
+		padding: 20px;
+		cursor: pointer;
+		transition: all 0.2s;
+		text-align: center;
+	}
+
+	.camera-option:hover {
+		background: rgba(255, 255, 255, 0.1);
+		border-color: rgba(255, 255, 255, 0.3);
+	}
+
+	.camera-option.selected {
+		background: rgba(59, 130, 246, 0.2);
+		border-color: rgb(59, 130, 246);
+		box-shadow: 0 0 20px rgba(59, 130, 246, 0.3);
+	}
+
+	.camera-icon {
+		font-size: 48px;
+		margin-bottom: 8px;
+	}
+
+	.camera-label {
+		font-size: 18px;
+		font-weight: 600;
+		margin-bottom: 4px;
+	}
+
+	.camera-desc {
+		font-size: 14px;
+		opacity: 0.7;
 	}
 
 	/* Capture Screen */
@@ -511,6 +586,14 @@
 
 	.grid-photo:hover {
 		transform: scale(1.05);
+	}
+
+	.grid-photo.mirrored {
+		transform: scaleX(-1);
+	}
+
+	.grid-photo.mirrored:hover {
+		transform: scaleX(-1) scale(1.05);
 	}
 
 	.loading-spinner {

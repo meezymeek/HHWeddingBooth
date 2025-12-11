@@ -13,9 +13,12 @@
 	let previewUrl: string | null = null;
 	let uploading = false;
 	let error = '';
+	let capturedWithFrontCamera = true; // Track which camera was used
 
 	$: countdownSeconds = $configStore.countdown_initial;
 	$: mirror = $configStore.mirror_preview;
+	// Only mirror preview if photo was taken with front camera
+	$: previewMirrored = capturedWithFrontCamera && mirror;
 
 	onMount(() => {
 		const storedUser = localStorage.getItem('photobooth_user');
@@ -26,8 +29,9 @@
 		user = JSON.parse(storedUser);
 	});
 
-	function handleCapture(event: CustomEvent<{ blob: Blob }>) {
+	function handleCapture(event: CustomEvent<{ blob: Blob; facingMode: 'user' | 'environment' }>) {
 		capturedBlob = event.detail.blob;
+		capturedWithFrontCamera = event.detail.facingMode === 'user';
 		previewUrl = URL.createObjectURL(capturedBlob);
 	}
 
@@ -81,7 +85,7 @@
 {:else if previewUrl}
 	<!-- Preview Screen -->
 	<div class="preview-container">
-		<img src={previewUrl} alt="Captured photo" class="preview-image" class:mirrored={mirror} />
+		<img src={previewUrl} alt="Captured photo" class="preview-image" class:mirrored={previewMirrored} />
 
 		<div class="preview-controls">
 			<h2 class="text-2xl mb-6 text-center">How's it look?</h2>
