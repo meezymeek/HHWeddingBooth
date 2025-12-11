@@ -238,7 +238,7 @@
 		{:else if !existingUser}
 			<!-- New User Form -->
 			<h1 class="text-display mb-4">
-				Haven <span class="ornament"></span> Hayden
+				Haven + Hayden
 			</h1>
 			
 			<p class="text-script mb-2">New Year's Eve 2025</p>
