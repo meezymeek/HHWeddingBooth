@@ -1,12 +1,13 @@
 # Project Status - Haven & Hayden Wedding Photo Booth
 
-**Last Updated:** December 10, 2024  
+**Last Updated:** December 11, 2025  
 **GitHub Repository:** https://github.com/meezymeek/HHWeddingBooth  
-**Event Date:** December 31, 2025 (New Year's Eve)
+**Event Date:** December 31, 2025 (New Year's Eve)  
+**Production URL:** https://photobooth.meekthenilands.com
 
 ---
 
-## 🎯 Overall Status: Phase 2 Complete & Ready for Testing
+## 🎯 Overall Status: Phase 3 Complete & Production Deployed ✅
 
 ### ✅ **Phase 1: Core MVP** — COMPLETE & TESTED
 
@@ -246,6 +247,47 @@ See `PHASE3_TESTING_CHECKLIST.md` for full testing procedures.
 
 ---
 
+## 🔧 **Production Bug Fixes (December 2025)**
+
+**Date:** December 11, 2025  
+**Status:** ✅ All Critical Bugs Resolved  
+**Documentation:** See `DECEMBER_2025_BUG_FIXES.md` for full details
+
+### Bugs Fixed
+
+1. ✅ **UI: Diamond Symbol → Plus Sign** (Cosmetic)
+   - Replaced ornament symbols with keyboard plus sign (+)
+   - Updated on home, booth menu, and gallery pages
+
+2. ✅ **nginx: Admin Dashboard 404** (Critical)
+   - Removed incorrect `/admin/` routing to backend
+   - Admin pages now properly served by frontend
+
+3. ✅ **Backend: Admin Login Blocked** (Critical)
+   - Fixed auth middleware to skip `/verify` endpoint
+   - Admin login now functional
+
+4. ✅ **Backend: Admin Photos 404** (Major)
+   - Admin photos endpoint now returns proper URLs
+   - Photo thumbnails display correctly in dashboard
+
+5. ✅ **Frontend: Photo Strip URL Duplication** (Major)
+   - Fixed double path prefixing in multi-booth preview
+   - Photo strips now display correctly
+
+### Git Commits
+- `fde313b` - Fix admin auth middleware to allow /verify endpoint
+- `2e93697` - Fix admin photos endpoint to return proper URLs
+- `669b0d3` - Fix photo strip URL duplication in multi booth preview
+
+### Production Deployment Status
+- **Live URL:** https://photobooth.meekthenilands.com
+- **Deployment:** Docker Compose with Cloudflare Tunnel
+- **Admin Access:** https://photobooth.meekthenilands.com/admin
+- **Status:** ✅ Fully Operational
+
+---
+
 ## 🎁 **Phase 4: Nice-to-Have** — FUTURE
 
 - [ ] Custom overlay system for photo strips
@@ -264,7 +306,14 @@ See `PHASE3_TESTING_CHECKLIST.md` for full testing procedures.
 - Missing sound files (beep.mp3, shutter.mp3) - countdown/capture are silent
 - Missing PWA icons - PWA installation won't work (Phase 3 feature)
 
-### Resolved Issues
+### Resolved Issues (December 2025)
+- ✅ Diamond ornament symbol between names (replaced with +)
+- ✅ Admin dashboard 404 error (nginx routing fixed)
+- ✅ Admin login auth middleware blocking /verify (fixed)
+- ✅ Admin photos not displaying (URL generation fixed)
+- ✅ Photo strip URL duplication (double prefix fixed)
+
+### Resolved Issues (Earlier)
 - ✅ Port 3000 conflict with other service (moved to 3001)
 - ✅ Device fingerprint preventing multi-user (removed auto-login)
 - ✅ Name conflict dead-end (added resolution UI)
@@ -374,16 +423,18 @@ npm run dev
 
 ## 🎯 **Roadmap**
 
-| Phase | Status | ETA |
-|-------|--------|-----|
-| Phase 1: Core MVP | ✅ Complete | Done |
-| Phase 2: Photo Booth Mode | ✅ Complete | Done |
-| Phase 3: Polish & Production | 📋 Planned | 8-10 hours |
-| Phase 4: Nice-to-Have | 💭 Ideas | TBD |
+| Phase | Status | Completion Date |
+|-------|--------|-----------------|
+| Phase 1: Core MVP | ✅ Complete | Dec 10, 2024 |
+| Phase 2: Photo Booth Mode | ✅ Complete | Dec 10, 2024 |
+| Phase 3: Polish & Production | ✅ Complete | Dec 10, 2024 |
+| Production Bug Fixes | ✅ Complete | Dec 11, 2025 |
+| Phase 4: Nice-to-Have | 💭 Future | TBD |
 | Event Date | 🗓️ Target | Dec 31, 2025 |
 
 ---
 
-**Current Version:** 2.0.0 (Phase 2)  
-**Last Commit:** (pending commit)  
-**Repository:** https://github.com/meezymeek/HHWeddingBooth
+**Current Version:** 3.0.1 (Production Ready)  
+**Last Commit:** 669b0d3 (December 11, 2025)  
+**Repository:** https://github.com/meezymeek/HHWeddingBooth  
+**Production:** https://photobooth.meekthenilands.com
