@@ -119,7 +119,7 @@
 			// Only generate strip if all photos were uploaded successfully (online)
 			if (allUploaded && $isOnline) {
 				const stripResult = await generateStrip(sessionId);
-				stripUrl = `/photos/${user.slug}/strips/${stripResult.strip_filename}`;
+				stripUrl = stripResult.strip_filename;
 			} else if (!$isOnline) {
 				// Offline - photos queued, skip strip generation for now
 				console.log('Photos queued for offline sync. Strip will be generated when synced.');
