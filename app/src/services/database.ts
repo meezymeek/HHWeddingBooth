@@ -112,7 +112,7 @@ export function initializeDatabase(): void {
     }
   });
 
-  insertMany(defaultConfig);
+  insertMany(defaultConfig as [string, string][]);
 
   console.log('✅ Database initialized successfully');
 }

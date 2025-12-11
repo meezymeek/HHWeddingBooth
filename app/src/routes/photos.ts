@@ -46,11 +46,11 @@ export async function photoRoutes(fastify: FastifyInstance) {
       }
 
       // Get form fields
-      const userId = data.fields.user_id?.value as string;
-      const sessionId = data.fields.session_id?.value as string | undefined;
-      const capturedAt = data.fields.captured_at?.value as string;
-      const sequenceNumber = data.fields.sequence_number?.value as string | undefined;
-      const facingMode = data.fields.facing_mode?.value as string | undefined;
+      const userId = (data.fields.user_id as any)?.value as string;
+      const sessionId = (data.fields.session_id as any)?.value as string | undefined;
+      const capturedAt = (data.fields.captured_at as any)?.value as string;
+      const sequenceNumber = (data.fields.sequence_number as any)?.value as string | undefined;
+      const facingMode = (data.fields.facing_mode as any)?.value as string | undefined;
 
       // Validate required fields
       if (!userId || !capturedAt) {
